@@ -635,11 +635,16 @@ class FogBugz
 
       item.each_child do |attribute|
         if attribute.class != Hpricot::Text
-          return_value[item_name][attribute.name] = attribute.inner_html
-          # convert values to proper types
-          return_value[item_name][attribute.name] = CDATA_REGEXP.match(attribute.inner_html)[1] if (attribute.name[0,1] == "s" or attribute.name[0,3] == "evt") and attribute.inner_html != "" and CDATA_REGEXP.match(attribute.inner_html) != nil
-          return_value[item_name][attribute.name] = return_value[item_name][attribute.name].to_i if (attribute.name[0,2] == "ix" or attribute.name[0,1] == "n")
-          return_value[item_name][attribute.name] = (return_value[item_name][attribute.name] == "true") ? true : false if attribute.name[0,1] == "f"
+          value = attribute.inner_html
+          if attribute.name == 'tags'
+            return_value[item_name][attribute.name] = (attribute/"tag").map{|i| CDATA_REGEXP.match(i.inner_html)[1]}
+          else
+            return_value[item_name][attribute.name] = attribute.inner_html
+            # convert values to proper types
+            return_value[item_name][attribute.name] = CDATA_REGEXP.match(attribute.inner_html)[1] if (attribute.name[0,1] == "s" or attribute.name[0,3] == "evt") and attribute.inner_html != "" and CDATA_REGEXP.match(attribute.inner_html) != nil
+            return_value[item_name][attribute.name] = return_value[item_name][attribute.name].to_i if (attribute.name[0,2] == "ix" or attribute.name[0,1] == "n")
+            return_value[item_name][attribute.name] = (return_value[item_name][attribute.name] == "true") ? true : false if attribute.name[0,1] == "f"
+          end
         end
       end
     end
